@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "packproof"
+description = "Prove what's inside your packages: source-to-registry integrity analysis for open-source dependencies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dynamic = ["version"]
+dependencies = [
+    "pydantic>=2.9",
+    "typer>=0.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/Barnakdas-tech/PackProof"
+Repository = "https://github.com/Barnakdas-tech/PackProof"
+Issues = "https://github.com/Barnakdas-tech/PackProof/issues"
+
+[project.scripts]
+packproof = "packproof.cli.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.6",
+]
+
+[tool.hatch.version]
+path = "src/packproof/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/packproof"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-config --strict-markers"
+markers = [
+    "unit: fast test of a single module, no network or filesystem side effects",
+    "integration: test that crosses module or process boundaries",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E4", # import layout
+    "E7", # statement layout
+    "E9", # syntax errors
+    "F",  # undefined names, unused variables
+    "I",  # import ordering
+    "UP", # outdated typing constructs
+    "B",  # bugbear: shadowing, late binding, bare raises
+    "C4", # comprehension misuse
+    "SIM",# needless complexity
+    "S",  # bandit: unsafe handling of untrusted input
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"] # assertions are the point of a test

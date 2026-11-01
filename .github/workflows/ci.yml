@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "chore/**"
+      - "refactor/**"
+
+# Verification only: this workflow reads the repository and never publishes anything.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-progress run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint and test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      # A failure on 3.11 must not hide a separate failure on 3.13.
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    # `UV_PYTHON` outranks the repository's `.python-version` pin (3.13 for local work)
+    # for every uv command in this job. Setting it here rather than passing `--python`
+    # to `uv sync` alone matters: `uv run` re-checks the environment against
+    # `.python-version`, so a bare `uv sync --python 3.11` would have rebuilt the venv
+    # as 3.13 before pytest ran — a green matrix that never tested 3.11.
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # `--frozen` forbids re-resolution: uv.lock must already match pyproject.toml.
+      - name: Install dependencies from the lockfile
+        run: uv sync --frozen --dev
+
+      - name: Confirm the interpreter matches the matrix
+        run: |
+          EXPECTED="${{ matrix.python-version }}"
+          ACTUAL="$(uv run python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "expected Python $EXPECTED but tests would run on $ACTUAL" >&2
+            exit 1
+          fi
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Pytest
+        run: uv run pytest
+
+      - name: CLI smoke test
+        run: |
+          uv run packproof --version
+          uv run packproof --help
+          uv run python -m packproof --help

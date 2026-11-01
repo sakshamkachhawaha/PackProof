@@ -1,0 +1,67 @@
+# Byte-compiled / cached interpreter output
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# uv: the cache directory is disposable, but uv.lock below is NOT — never ignore it
+.uv/
+uv-cache/
+
+# Build artifacts and distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+*.whl
+*.tar.gz
+!examples/archives/*.tar.gz
+
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files may hold credentials — never commit them
+.env
+.env.*
+!.env.example
+
+# Downloaded package content: untrusted input, kept out of the repository.
+#
+# The workspace directories this list used to name — `.packproof/`, `packproof-workspace/`,
+# `scans/` — were CWD-relative locations from before the workspace policy existed. The
+# default now resolves to a per-user cache outside any checkout, and validation refuses
+# every path inside this repository, so those three names could only ever describe a
+# directory the tool cannot use. Archives are still excluded: a scan downloads them, and
+# one can still be dropped here by hand.
+*.tgz
+*.zip
+
+# Generated reports
+reports/
+*.pdf
+*.report.html
+
+# Local scratch
+*.log
+tmp/
+.tmp/
